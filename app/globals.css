@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f7f5;
+  --surface: #ffffff;
+  --surface-muted: #efefed;
+  --ink: #151515;
+  --muted: #747474;
+  --faint: #a6a6a2;
+  --line: #deded9;
+  --accent: #f48120;
+  --accent-soft: #fff0e2;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--background); }
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+button, a { -webkit-tap-highlight-color: transparent; }
+::selection { background: var(--accent); color: var(--ink); }
+
+.schedule-grid {
+  background-image: linear-gradient(to right, rgba(21,21,21,.055) 1px, transparent 1px), linear-gradient(to bottom, rgba(21,21,21,.055) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.calendar-cell { min-height: 88px; }
+
+@media (max-width: 767px) {
+  .calendar-cell { min-height: 62px; }
+}
