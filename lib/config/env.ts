@@ -1,17 +1,17 @@
 export const publicConfig = {
-  authorizeUrl: process.env.NEXT_PUBLIC_AUTHORIZATION_URL || "http://localhost:3000/api/oauth/authorize",
-  authorizationUrl: process.env.NEXT_PUBLIC_AUTHORIZATION_URL || "http://localhost:3000/api/oauth/authorize",
-  tokenUrl: process.env.NEXT_PUBLIC_TOKEN_URL || "http://localhost:3000/api/oauth/token",
-  userinfoUrl: process.env.NEXT_PUBLIC_USERINFO_URL || "http://localhost:3000/api/oauth/userinfo",
-  clientId: process.env.NEXT_PUBLIC_CLIENT_ID || "calendly-client-id",
-  redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI || "http://localhost:3001/auth/callback",
-  jwksUrl: process.env.NEXT_PUBLIC_JWKS_URL || "http://localhost:3000/api/oauth/jwks",
-  ssoIssuer: process.env.NEXT_PUBLIC_SSO_ISSUER || "http://localhost:3000",
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"
+  authorizeUrl: process.env.SSO_AUTHORIZE_URL || "http://localhost:3000/api/oauth/authorize",
+  authorizationUrl: process.env.SSO_AUTHORIZE_URL || "http://localhost:3000/api/oauth/authorize",
+  tokenUrl: process.env.SSO_TOKEN_URL || "http://localhost:3000/api/oauth/token",
+  userinfoUrl: process.env.SSO_USERINFO_URL || "http://localhost:3000/api/oauth/userinfo",
+  clientId: process.env.AWS_LPU_CLIENT_ID || "calendly-client-id",
+  redirectUri: process.env.AWS_LPU_REDIRECT_URI || "http://localhost:3001/auth/callback",
+  jwksUrl: process.env.SSO_JWKS_URL || "http://localhost:3000/api/oauth/jwks",
+  ssoIssuer: process.env.SSO_ISSUER || "http://localhost:3000",
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 };
 
 export const serverConfig = {
-  clientSecret: process.env.CLIENT_SECRET || "calendly-client-secret",
+  clientSecret: process.env.AWS_LPU_CLIENT_SECRET || "calendly-client-secret",
 };
 
 export function getGoogleConfig() {
@@ -59,7 +59,7 @@ export function validateProductionEnv() {
   const required = [
     "NEXT_PUBLIC_SUPABASE_URL",
     "SUPABASE_SERVICE_ROLE_KEY",
-    "CLIENT_SECRET"
+    "AWS_LPU_CLIENT_SECRET"
   ];
 
   for (const req of required) {
