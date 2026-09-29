@@ -67,7 +67,25 @@ export async function createBookingNotifications(params: CreateBookingNotificati
     });
   }
 
+  
+  const coreTeamEmails = (process.env.CORE_TEAM_EMAILS || "")
+    .split(",")
+    .map(e => e.trim())
+    .filter(Boolean);
+
+  for (const email of coreTeamEmails) {
+    notificationsToCreate.push({
+      interview_id: interviewId,
+      recipient_email: email,
+      type: 'BOOKING_CONFIRMATION_INTERVIEWER',
+      status: 'PENDING',
+      scheduled_for: now.toISO(),
+      schedule_version: interview.schedule_version,
+    });
+  }
+
   // 2. Reminders
+
   const reminders = [
     { type: 'REMINDER_24_HOURS', time: startsAt.minus({ hours: 24 }) },
     { type: 'REMINDER_1_HOUR', time: startsAt.minus({ hours: 1 }) },

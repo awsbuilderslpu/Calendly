@@ -2,7 +2,7 @@ import { google } from "googleapis";
 import crypto from "node:crypto";
 import { getGoogleConfig } from "@/lib/config/env";
 
-export const GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar.events"];
+export const GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"];
 const stateCookie = "calendly_google_oauth_state";
 
 export function createGoogleClient() {

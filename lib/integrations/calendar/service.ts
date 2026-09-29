@@ -11,9 +11,9 @@ function adaptGoogle(userId: string): CalendarProvider {
     async createEvent(input) {
       // Find calendar id from google_calendar_connections
       const { data } = await createDatabaseAdmin().from("google_calendar_connections").select("selected_calendar_id").eq("user_id", userId).single();
-      if (!data?.selected_calendar_id) throw new Error("CALENDAR_NOT_CONNECTED");
-      const res = await g.createEvent({ ...input, calendarId: data.selected_calendar_id });
-      return { externalEventId: res.id, externalCalendarId: data.selected_calendar_id, meetingProvider: res.meetUrl ? "GOOGLE_MEET" : "NONE", meetingUrl: res.meetUrl };
+      const calId = data?.selected_calendar_id || "primary";
+      const res = await g.createEvent({ ...input, calendarId: calId });
+      return { externalEventId: res.id, externalCalendarId: calId, meetingProvider: res.meetUrl ? "GOOGLE_MEET" : "NONE", meetingUrl: res.meetUrl };
     },
     async updateEvent(calId, eventId, input) {
       const res = await g.updateEvent(calId, eventId, input);
