@@ -13,13 +13,31 @@ function toAppUser(row: Record<string, unknown>, fallback: SsoUser): AppUser {
 }
 
 export async function getProvisionedProfile(ssoUser: SsoUser): Promise<AppUser> {
-  const { data, error } = await createDatabaseAdmin()
+  const db = createDatabaseAdmin();
+  let { data, error } = await db
     .from("profiles")
     .select("id, full_name, email, avatar_url, role")
     .eq("id", ssoUser.sub)
     .maybeSingle();
 
   if (error) throw new Error("Unable to read the SSO profile");
-  if (!data) throw new Error("Unable to find the SSO profile");
+  
+  if (!data) {
+    const { data: newData, error: insertError } = await db
+      .from("profiles")
+      .insert({
+        id: ssoUser.sub,
+        email: ssoUser.email,
+        full_name: ssoUser.name,
+        avatar_url: ssoUser.picture || null,
+        role: "CANDIDATE"
+      })
+      .select("id, full_name, email, avatar_url, role")
+      .single();
+      
+    if (insertError) throw new Error("Unable to provision SSO profile: " + insertError.message);
+    data = newData;
+  }
+  
   return toAppUser(data, ssoUser);
 }

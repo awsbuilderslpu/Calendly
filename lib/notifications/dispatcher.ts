@@ -91,7 +91,7 @@ export async function processPendingNotifications(limit = 20) {
           parameters: params
         });
       } else {
-        let emailContent = { subject: '', htmlBody: '' };
+        let emailContent: any;
         switch (notif.type) {
           case 'BOOKING_CONFIRMATION_CANDIDATE':
           case 'RESCHEDULE_CONFIRMATION_CANDIDATE':
@@ -104,12 +104,22 @@ export async function processPendingNotifications(limit = 20) {
           case 'CANCELLATION_CONFIRMATION_CANDIDATE':
             emailContent = {
               subject: `Interview Cancelled — ${templateData.jobTitle}`,
+              greeting: `Hi ${templateData.candidateName},`,
+              heading: `Interview Cancelled`,
+              content: `Your interview for ${templateData.jobTitle} has been cancelled.`,
+              senderName: "AWS Student Builder Group",
+              senderRole: "Recruitment Team",
               htmlBody: `<h2>Interview Cancelled</h2><p>Hi ${templateData.candidateName},</p><p>Your interview for ${templateData.jobTitle} has been cancelled.</p>`
             };
             break;
           case 'CANCELLATION_CONFIRMATION_INTERVIEWER':
             emailContent = {
               subject: `Interview Cancelled — ${templateData.candidateName}`,
+              greeting: `Hi Interviewer,`,
+              heading: `Interview Cancelled`,
+              content: `The interview with ${templateData.candidateName} for ${templateData.jobTitle} has been cancelled.`,
+              senderName: "AWS Student Builder Group",
+              senderRole: "Recruitment Team",
               htmlBody: `<h2>Interview Cancelled</h2><p>The interview with ${templateData.candidateName} for ${templateData.jobTitle} has been cancelled.</p>`
             };
             break;
@@ -126,6 +136,11 @@ export async function processPendingNotifications(limit = 20) {
           id: notif.id,
           recipientEmail: notif.recipient_email,
           subject: emailContent.subject,
+          content: emailContent.content,
+          greeting: emailContent.greeting,
+          heading: emailContent.heading,
+          senderName: emailContent.senderName,
+          senderRole: emailContent.senderRole,
           htmlBody: emailContent.htmlBody,
         });
       }

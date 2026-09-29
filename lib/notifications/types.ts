@@ -15,7 +15,15 @@ export interface NotificationMessage {
   id: string; // Used for idempotency where supported
   recipientEmail: string;
   subject: string;
-  htmlBody: string;
+  // Mail API v1 fields:
+  content: string; // Plain-text email content. Use a blank line between paragraphs.
+  greeting?: string; // Greeting displayed above the message.
+  heading?: string; // Main heading displayed in the email.
+  senderName?: string; // Name displayed in the signature.
+  senderRole?: string; // Role or team displayed below the sender name.
+  
+  // Legacy / backward compatibility if needed by other providers
+  htmlBody?: string;
 }
 
 export interface NotificationResult {

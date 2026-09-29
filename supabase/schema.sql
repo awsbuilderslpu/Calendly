@@ -256,7 +256,7 @@ create or replace function public.book_interview(
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare
   existing public.interviews;
   created public.interviews;
@@ -312,7 +312,7 @@ begin
 exception when exclusion_violation then
   raise exception using errcode = '23P01', message = 'SLOT_UNAVAILABLE';
 end;
-$;
+$$;
 
 -- PHASE 8: Rescheduling & Cancellation
 

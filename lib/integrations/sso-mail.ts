@@ -5,7 +5,7 @@ export class SsoMailProvider implements NotificationProvider {
   private apiKey: string;
 
   constructor() {
-    this.apiUrl = process.env.SSO_ISSUER ? `${process.env.SSO_ISSUER}/api/v1/mail/send` : 'https://sso.awslpu.in/api/v1/mail/send';
+    this.apiUrl = 'https://sso.awslpu.in/api/v1/mail/send';
     this.apiKey = process.env.AWS_LPU_MAIL_API_KEY || '';
   }
 
@@ -25,8 +25,11 @@ export class SsoMailProvider implements NotificationProvider {
         body: JSON.stringify({
           to: message.recipientEmail,
           subject: message.subject,
-          html: message.htmlBody,
-          idempotency_key: message.id, // For idempotency if supported by SSO mail
+          content: message.content,
+          greeting: message.greeting,
+          heading: message.heading,
+          senderName: message.senderName || "AWS Student Builder Group",
+          senderRole: message.senderRole || "Recruitment Team"
         }),
       });
 

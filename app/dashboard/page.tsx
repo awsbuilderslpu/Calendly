@@ -1,26 +1,125 @@
 import AppNav from "@/components/layout/app-nav";
-import { getRecruiterOrAdmin } from "@/lib/auth/server";
+import { getCurrentUser, getRecruiterOrAdmin } from "@/lib/auth/server";
 import { createDatabaseAdmin } from "@/lib/db/admin";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const access = await getRecruiterOrAdmin();
-  if (access.status !== 200) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const database = createDatabaseAdmin();
+
+  // -------------------------------------------------------------
+  // CANDIDATE DASHBOARD
+  // -------------------------------------------------------------
+  if (user.role === "CANDIDATE" || false) {
+    const { data: rawRequests } = await database
+      .from("interview_scheduling_requests")
+      .select("id, job_title, round_name, status, scheduling_links(token_hash, expires_at, revoked_at, used_at)")
+      .eq("candidate_email", user.email)
+      .order("created_at", { ascending: false });
+    
+    const requests = (rawRequests || []).filter(r => {
+      const links = Array.isArray(r.scheduling_links) ? r.scheduling_links : [r.scheduling_links];
+      const isUsed = links.some(l => l && l.used_at);
+      return r.status !== "SCHEDULED" && !isUsed;
+    });
+
+    const { data: upcoming } = await database
+      .from("interviews")
+      .select("id, job_title, round_name, starts_at, status, google_meet_url, calendar_integrations(meeting_url)")
+      .eq("candidate_email", user.email)
+      .gte("starts_at", new Date().toISOString())
+      .order("starts_at", { ascending: true });
+
     return (
       <>
         <AppNav />
-        <main className="mx-auto max-w-3xl px-5 py-20">
-          <h1 className="text-4xl font-semibold">Unauthorized</h1>
+        <main className="mx-auto w-full max-w-5xl px-5 py-12">
+          <h1 className="text-3xl font-semibold mb-8">Candidate Dashboard</h1>
+          
+          <section className="mb-12">
+            <h2 className="text-xl font-medium mb-4">Pending Interview Requests</h2>
+            {requests && requests.length > 0 ? (
+              <ul className="border rounded bg-white divide-y">
+                {requests.map((r: any) => {
+                  const links = Array.isArray(r.scheduling_links) ? r.scheduling_links : [r.scheduling_links];
+                  const activeLink = links.find((l: any) => l && !l.revoked_at && !l.used_at && new Date(l.expires_at) > new Date());
+                  
+                  return (
+                    <li key={r.id} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                      <div>
+                        <p className="font-medium">{r.job_title}</p>
+                        <p className="text-sm text-gray-500">{r.round_name}</p>
+                        <p className="text-sm text-gray-400 mt-1">Status: {r.status}</p>
+                      </div>
+                      <div>
+                        {r.status === "OPEN" ? (
+                          <a href={`/api/candidate/self-serve/${r.id}`} className="px-4 py-2 bg-[#f48120] text-black text-sm font-semibold hover:bg-orange-500 rounded-sm">
+                            Schedule Now
+                          </a>
+                        ) : r.status === "PENDING" ? (
+                          <span className="text-sm text-gray-400 italic">Pending panel assignment...</span>
+                        ) : (
+                          <span className="text-sm text-gray-400">{r.status}</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="p-8 border rounded bg-gray-50 text-center text-gray-500">
+                You have no pending interview requests.
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-xl font-medium mb-4">Upcoming Interviews</h2>
+            {upcoming && upcoming.length > 0 ? (
+              <ul className="border rounded bg-white divide-y">
+                {upcoming.map((u: any) => {
+                  const meets = Array.isArray(u.calendar_integrations) ? u.calendar_integrations : [u.calendar_integrations];
+                  const meetingUrl = u.google_meet_url || meets.find((m: any) => m?.meeting_url)?.meeting_url;
+                  
+                  return (
+                    <li key={u.id} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                      <div>
+                        <p className="font-medium">{u.job_title} • {u.round_name}</p>
+                        <p className="text-sm text-gray-600 mt-1">{new Date(u.starts_at).toLocaleString()}</p>
+                        <p className="text-sm text-gray-400">Status: {u.status}</p>
+                      </div>
+                      <div>
+                        {meetingUrl ? (
+                          <a href={meetingUrl} target="_blank" rel="noreferrer" className="px-4 py-2 border border-gray-300 text-sm hover:border-black rounded-sm">
+                            Join Meeting
+                          </a>
+                        ) : (
+                          <span className="text-sm text-gray-400">Meeting link pending...</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="p-8 border rounded bg-gray-50 text-center text-gray-500">
+                No upcoming interviews scheduled.
+              </div>
+            )}
+          </section>
         </main>
       </>
     );
   }
 
-  const database = createDatabaseAdmin();
-  
-  // Dashboard Metrics (Last 30 days)
+  // -------------------------------------------------------------
+  // RECRUITER / ADMIN DASHBOARD
+  // -------------------------------------------------------------
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
   
@@ -34,7 +133,6 @@ export default async function DashboardPage() {
     feedback: { pending: 0, submitted: 0 }, calendar: { synced: 0, failed: 0, pending: 0 }
   };
 
-  // Upcoming Interviews
   const { data: upcoming } = await database
     .from("interviews")
     .select("id, candidate_name, job_title, round_name, starts_at, status")
@@ -86,7 +184,7 @@ export default async function DashboardPage() {
             <h2 className="text-xl font-medium mb-4">Upcoming Interviews</h2>
             {upcoming && upcoming.length > 0 ? (
               <ul className="border rounded bg-white divide-y">
-                {upcoming.map((u: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (
+                {upcoming.map((u: any) => (
                   <li key={u.id} className="p-4 flex justify-between items-center">
                     <div>
                       <p className="font-medium">{u.candidate_name}</p>

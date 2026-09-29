@@ -9,6 +9,19 @@ export async function getCurrentUser(): Promise<AppUser | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
+  // --- LOCAL DEV BYPASS FOR PRINCE ---
+  if (process.env.NODE_ENV === "development" && token === "DEV_PRINCE") {
+    return {
+      id: "cand-1790658264629", // Prince's ID from earlier
+      ssoUserId: "cand-1790658264629",
+      name: "Prince",
+      email: "paramjitsinghrose@gmail.com",
+      picture: null,
+      role: "CANDIDATE"
+    };
+  }
+  // ------------------------------------
+
   const userResponse = await fetch(publicConfig.userinfoUrl, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",

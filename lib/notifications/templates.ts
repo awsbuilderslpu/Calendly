@@ -34,71 +34,60 @@ export interface TemplateData {
 }
 
 export function buildCandidateBookingTemplate(data: TemplateData) {
-  const safeName = escapeHtml(data.candidateName);
-  const safeJob = escapeHtml(data.jobTitle);
-  const safeRound = escapeHtml(data.roundName);
-  const safeMeet = data.meetUrl ? escapeHtml(data.meetUrl) : null;
   const dateStr = formatDate(data.startsAt, data.timezone);
   const timeStr = formatTimeRange(data.startsAt, data.endsAt, data.timezone);
-  
-  const meetHtml = safeMeet 
-    ? `<p><strong>Google Meet:</strong> <a href="${safeMeet}">${safeMeet}</a></p>`
-    : `<p>Meeting details will be available shortly.</p>`;
-
-  const manageHtml = data.manageToken 
-    ? `<p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/manage-interview/${data.manageToken}">Manage your interview</a></p>`
+  const meetStr = data.meetUrl ? data.meetUrl : "Meeting details will be shared shortly.";
+  const manageLink = data.manageToken 
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/manage-interview/${data.manageToken}`
     : '';
 
-  const html = `
-    <h2>Interview Scheduled — ${safeJob}</h2>
-    <p>Hi ${safeName},</p>
-    <p>Your interview has been successfully scheduled.</p>
-    <ul>
-      <li><strong>Role:</strong> ${safeJob}</li>
-      <li><strong>Round:</strong> ${safeRound}</li>
-      <li><strong>Date:</strong> ${dateStr}</li>
-      <li><strong>Time:</strong> ${timeStr}</li>
-    </ul>
-    ${meetHtml}
-    ${manageHtml}
-    <p>Best regards,<br>Recruitment Team</p>
-  `;
+  const content = `Your interview has been successfully scheduled.
+
+Role: ${data.jobTitle}
+Round: ${data.roundName}
+Date: ${dateStr}
+Time: ${timeStr}
+
+Google Meet:
+${meetStr}
+
+${manageLink ? `Manage your interview:\n${manageLink}` : ''}`;
 
   return {
     subject: `Interview Scheduled \u2014 ${data.jobTitle}`,
-    htmlBody: html,
+    greeting: `Hi ${data.candidateName},`,
+    heading: `Interview Scheduled \u2014 ${data.jobTitle}`,
+    content,
+    senderName: "AWS Student Builder Group",
+    senderRole: "Recruitment Team",
+    htmlBody: content.replace(/\n/g, "<br>") // fallback if needed
   };
 }
 
 export function buildInterviewerBookingTemplate(data: TemplateData) {
-  const safeName = escapeHtml(data.candidateName);
-  const safeEmail = data.candidateEmail ? escapeHtml(data.candidateEmail) : '';
-  const safeJob = escapeHtml(data.jobTitle);
-  const safeRound = escapeHtml(data.roundName);
-  const safeMeet = data.meetUrl ? escapeHtml(data.meetUrl) : null;
   const dateStr = formatDate(data.startsAt, data.timezone);
   const timeStr = formatTimeRange(data.startsAt, data.endsAt, data.timezone);
-  
-  const meetHtml = safeMeet 
-    ? `<p><strong>Google Meet:</strong> <a href="${safeMeet}">${safeMeet}</a></p>`
-    : `<p>Meeting details will be available shortly.</p>`;
+  const meetStr = data.meetUrl ? data.meetUrl : "Meeting details will be shared shortly.";
 
-  const html = `
-    <h2>Interview Scheduled — ${safeName}</h2>
-    <p>You have been scheduled for an interview.</p>
-    <ul>
-      <li><strong>Candidate:</strong> ${safeName} ${safeEmail ? `(${safeEmail})` : ''}</li>
-      <li><strong>Role:</strong> ${safeJob}</li>
-      <li><strong>Round:</strong> ${safeRound}</li>
-      <li><strong>Date:</strong> ${dateStr}</li>
-      <li><strong>Time:</strong> ${timeStr}</li>
-    </ul>
-    ${meetHtml}
-  `;
+  const content = `You have been scheduled for an interview.
+
+Candidate: ${data.candidateName} ${data.candidateEmail ? `(${data.candidateEmail})` : ''}
+Role: ${data.jobTitle}
+Round: ${data.roundName}
+Date: ${dateStr}
+Time: ${timeStr}
+
+Google Meet:
+${meetStr}`;
 
   return {
     subject: `Interview Scheduled \u2014 ${data.candidateName}`,
-    htmlBody: html,
+    greeting: "Hi Interviewer,",
+    heading: `Interview Scheduled \u2014 ${data.candidateName}`,
+    content,
+    senderName: "AWS Student Builder Group",
+    senderRole: "Recruitment Team",
+    htmlBody: content.replace(/\n/g, "<br>")
   };
 }
 
@@ -107,17 +96,12 @@ export function buildReminderTemplate(
   isCandidate: boolean,
   type: 'REMINDER_24_HOURS' | 'REMINDER_1_HOUR' | 'REMINDER_10_MINUTES'
 ) {
-  const safeName = escapeHtml(data.candidateName);
-  const safeEmail = data.candidateEmail ? escapeHtml(data.candidateEmail) : '';
-  const safeJob = escapeHtml(data.jobTitle);
-  const safeRound = escapeHtml(data.roundName);
-  const safeMeet = data.meetUrl ? escapeHtml(data.meetUrl) : null;
   const dateStr = formatDate(data.startsAt, data.timezone);
   const timeStr = formatTimeRange(data.startsAt, data.endsAt, data.timezone);
-
-  const meetHtml = safeMeet 
-    ? `<p><strong>Google Meet:</strong> <a href="${safeMeet}">${safeMeet}</a></p>`
-    : `<p>Meeting details will be available shortly.</p>`;
+  const meetStr = data.meetUrl ? data.meetUrl : "Meeting details will be shared shortly.";
+  const manageLink = (isCandidate && data.manageToken) 
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/manage-interview/${data.manageToken}`
+    : '';
 
   let candidateSubject = '';
   let interviewerSubject = '';
@@ -134,36 +118,37 @@ export function buildReminderTemplate(
   }
 
   const subject = isCandidate ? candidateSubject : interviewerSubject;
-  const manageHtml = (isCandidate && data.manageToken) 
-    ? `<p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/manage-interview/${data.manageToken}">Manage your interview</a></p>`
-    : '';
+  
+  const content = isCandidate
+    ? `This is a reminder for your upcoming interview.
 
-  const html = isCandidate
-    ? `
-      <h2>${candidateSubject}</h2>
-      <p>Hi ${safeName},</p>
-      <p>This is a reminder for your upcoming interview.</p>
-      <ul>
-        <li><strong>Role:</strong> ${safeJob}</li>
-        <li><strong>Round:</strong> ${safeRound}</li>
-        <li><strong>Date:</strong> ${dateStr}</li>
-        <li><strong>Time:</strong> ${timeStr}</li>
-      </ul>
-      ${meetHtml}
-      ${manageHtml}
-    `
-    : `
-      <h2>${interviewerSubject}</h2>
-      <p>This is a reminder for your upcoming interview.</p>
-      <ul>
-        <li><strong>Candidate:</strong> ${safeName} ${safeEmail ? `(${safeEmail})` : ''}</li>
-        <li><strong>Role:</strong> ${safeJob}</li>
-        <li><strong>Round:</strong> ${safeRound}</li>
-        <li><strong>Date:</strong> ${dateStr}</li>
-        <li><strong>Time:</strong> ${timeStr}</li>
-      </ul>
-      ${meetHtml}
-    `;
+Role: ${data.jobTitle}
+Round: ${data.roundName}
+Date: ${dateStr}
+Time: ${timeStr}
 
-  return { subject, htmlBody: html };
+Google Meet:
+${meetStr}
+
+${manageLink ? `Manage your interview:\n${manageLink}` : ''}`
+    : `This is a reminder for your upcoming interview.
+
+Candidate: ${data.candidateName} ${data.candidateEmail ? `(${data.candidateEmail})` : ''}
+Role: ${data.jobTitle}
+Round: ${data.roundName}
+Date: ${dateStr}
+Time: ${timeStr}
+
+Google Meet:
+${meetStr}`;
+
+  return { 
+    subject, 
+    greeting: isCandidate ? `Hi ${data.candidateName},` : "Hi Interviewer,",
+    heading: subject,
+    content,
+    senderName: "AWS Student Builder Group",
+    senderRole: "Recruitment Team",
+    htmlBody: content.replace(/\n/g, "<br>") 
+  };
 }
