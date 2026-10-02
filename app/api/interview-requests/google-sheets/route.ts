@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         job_id: `job-${crypto.randomUUID().substring(0,8)}`,
         job_title: jobTitle,
         round_name: "Technical Interview",
-        duration_minutes: 60,
+        duration_minutes: 30,
         status: "OPEN",
         requested_by: access.user.email
       });

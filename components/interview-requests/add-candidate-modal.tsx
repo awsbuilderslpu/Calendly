@@ -8,7 +8,7 @@ export default function AddCandidateModal({ onClose }: { onClose: () => void }) 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "", email: "", jobTitle: "Student Developer", roundName: "Technical Interview", durationMinutes: 60
+    name: "", email: "", jobTitle: "Student Developer", roundName: "Technical Interview", durationMinutes: 30
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
