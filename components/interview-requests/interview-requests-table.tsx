@@ -100,10 +100,10 @@ export default function InterviewRequestsTable({ requests, panels }: { requests:
       
       
       <div className="mb-4 flex flex-col sm:flex-row sm:justify-end gap-3">
-        <button onClick={() => setShowAddModal(true)} className="border border-[#deded9] bg-white px-4 py-2 text-sm font-semibold text-black hover:border-black transition-colors">
+        <button onClick={() => setShowAddModal(true)} className="cursor-pointer border border-[#deded9] bg-white px-4 py-2 text-sm font-semibold text-black hover:border-black transition-colors">
           + Add Candidate Manually
         </button>
-        <button onClick={handleSync} disabled={isSyncing} className="bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-[#333] disabled:opacity-50 transition-colors">
+        <button onClick={handleSync} disabled={isSyncing} className="cursor-pointer bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-[#333] disabled:opacity-50 transition-colors">
           {isSyncing ? "Syncing..." : "Sync Shortlisted Students"}
         </button>
       </div>
@@ -128,7 +128,7 @@ export default function InterviewRequestsTable({ requests, panels }: { requests:
             <button
               onClick={handleBulkGenerate}
               disabled={!selectedPanel || isProcessing}
-              className="bg-[#f48120] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 transition-colors hover:bg-[#e0751a]"
+              className="cursor-pointer bg-[#f48120] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 transition-colors hover:bg-[#e0751a]"
             >
               {isProcessing ? "Processing..." : "Generate Links & Send Emails"}
             </button>

@@ -1,20 +1,25 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import AppNav from "@/components/layout/app-nav";
 import { getRecruiterOrAdmin } from "@/lib/auth/server";
 import { listInterviewRequests } from "@/lib/db/interview-requests";
 import { createDatabaseAdmin } from "@/lib/db/admin";
 import InterviewRequestsTable from "@/components/interview-requests/interview-requests-table";
 
+async function RequestsData() {
+  // Fetch these in parallel for maximum speed
+  const [requests, panelsData] = await Promise.all([
+    listInterviewRequests(),
+    createDatabaseAdmin().from("panels").select("id, name").order("name")
+  ]);
+
+  const panels = panelsData.data || [];
+  return <InterviewRequestsTable requests={requests} panels={panels} />;
+}
+
 export default async function InterviewRequestsPage() {
   const access = await getRecruiterOrAdmin();
   if (access.status !== 200) return <><AppNav /><main className="mx-auto max-w-3xl px-5 py-20 sm:px-8"><h1 className="text-4xl font-semibold tracking-[-.07em]">Interview requests</h1><p className="mt-5 text-sm text-[#777772]">This administrative view is available to recruiters and admins only.</p></main></>;
   
-  const requests = await listInterviewRequests();
-  
-  const db = createDatabaseAdmin();
-  const { data: panelsData } = await db.from("panels").select("id, name").order("name");
-  const panels = panelsData || [];
-
   return (
     <>
       <AppNav />
@@ -29,7 +34,14 @@ export default async function InterviewRequestsPage() {
           </p>
         </div>
         
-        <InterviewRequestsTable requests={requests} panels={panels} />
+        <Suspense fallback={
+          <div className="flex flex-col items-center justify-center py-20 text-[#9b9b96]">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#deded9] border-t-black mb-4"></div>
+            <p className="text-sm font-medium tracking-wide">Loading candidates...</p>
+          </div>
+        }>
+          <RequestsData />
+        </Suspense>
         
       </main>
     </>
