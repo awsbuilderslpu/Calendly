@@ -89,6 +89,7 @@ export async function createBookingNotifications(params: CreateBookingNotificati
   const reminders = [
     { type: 'REMINDER_24_HOURS', time: startsAt.minus({ hours: 24 }) },
     { type: 'REMINDER_1_HOUR', time: startsAt.minus({ hours: 1 }) },
+    { type: 'REMINDER_30_MINUTES', time: startsAt.minus({ minutes: 30 }) },
     { type: 'REMINDER_10_MINUTES', time: startsAt.minus({ minutes: 10 }) },
   ];
 

@@ -94,7 +94,7 @@ ${meetStr}`;
 export function buildReminderTemplate(
   data: TemplateData,
   isCandidate: boolean,
-  type: 'REMINDER_24_HOURS' | 'REMINDER_1_HOUR' | 'REMINDER_10_MINUTES'
+  type: 'REMINDER_24_HOURS' | 'REMINDER_1_HOUR' | 'REMINDER_30_MINUTES' | 'REMINDER_10_MINUTES'
 ) {
   const dateStr = formatDate(data.startsAt, data.timezone);
   const timeStr = formatTimeRange(data.startsAt, data.endsAt, data.timezone);
@@ -112,6 +112,9 @@ export function buildReminderTemplate(
   } else if (type === 'REMINDER_1_HOUR') {
     candidateSubject = `Interview Reminder \u2014 In 1 Hour`;
     interviewerSubject = `Upcoming Interview \u2014 In 1 Hour`;
+  } else if (type === 'REMINDER_30_MINUTES') {
+    candidateSubject = `Interview Reminder \u2014 In 30 Minutes`;
+    interviewerSubject = `Upcoming Interview \u2014 In 30 Minutes`;
   } else {
     candidateSubject = `Interview Starting Soon \u2014 10 Minutes`;
     interviewerSubject = `Interview Starting Soon \u2014 10 Minutes`;

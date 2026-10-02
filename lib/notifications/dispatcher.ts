@@ -125,8 +125,9 @@ export async function processPendingNotifications(limit = 20) {
             break;
           case 'REMINDER_24_HOURS':
           case 'REMINDER_1_HOUR':
+          case 'REMINDER_30_MINUTES':
           case 'REMINDER_10_MINUTES':
-            emailContent = buildReminderTemplate(templateData, isCandidate, notif.type as "REMINDER_24_HOURS" | "REMINDER_1_HOUR" | "REMINDER_10_MINUTES");
+            emailContent = buildReminderTemplate(templateData, isCandidate, notif.type as "REMINDER_24_HOURS" | "REMINDER_1_HOUR" | "REMINDER_30_MINUTES" | "REMINDER_10_MINUTES");
             break;
           default:
             throw new Error(`Unsupported notification type: ${notif.type}`);
