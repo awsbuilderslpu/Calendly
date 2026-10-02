@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import AddCandidateModal from "./add-candidate-modal";
 
 type Request = {
@@ -50,13 +51,13 @@ export default function InterviewRequestsTable({ requests, panels }: { requests:
       const res = await fetch("/api/interview-requests/google-sheets", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
-        alert(`Sync complete! Added ${data.count} new candidates. (${data.skipped} skipped/already existed)`);
+        toast.success(`Sync complete! Added ${data.count} new candidates. (${data.skipped} skipped/already existed)`);
         router.refresh();
       } else {
-        alert("Error: " + (data.error || "Failed to sync"));
+        toast.error(data.error || "Failed to sync");
       }
     } catch (err) {
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsSyncing(false);
     }
@@ -78,14 +79,14 @@ export default function InterviewRequestsTable({ requests, panels }: { requests:
       
       const data = await res.json();
       if (res.ok) {
-        alert(`Successfully processed ${data.results.filter((r: any) => r.status === "success").length} requests.`);
+        toast.success(`Successfully processed ${data.results.filter((r: any) => r.status === "success").length} requests.`);
         setSelectedIds(new Set());
         router.refresh();
       } else {
-        alert("Error: " + (data.error || "Bulk assignment failed"));
+        toast.error(data.error || "Bulk assignment failed");
       }
     } catch (err) {
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsProcessing(false);
     }

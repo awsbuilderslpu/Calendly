@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export function InterviewActions({ interviewId, status }: { interviewId: string, status: string }) {
   const router = useRouter();
@@ -16,14 +17,14 @@ export function InterviewActions({ interviewId, status }: { interviewId: string,
         headers: { "Content-Type": "application/json" }
       });
       if (res.ok) router.refresh();
-      else alert((await res.json()).error || "Failed to cancel");
+      else toast.error((await res.json()).error || "Failed to cancel");
     } finally {
       setLoading(false);
     }
   };
 
   const handleReschedule = () => {
-    alert("Reschedule flow would open here for recruiters.");
+    toast("Reschedule flow would open here for recruiters.", { icon: "ℹ️" });
   };
 
   if (status === "CANCELLED") return null;

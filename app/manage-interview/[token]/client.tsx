@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
 
@@ -44,7 +45,7 @@ export function ManageInterviewClient({ interview, token }: { interview: Record<
   const handleReschedule = () => {
     // In a full implementation, we'd load the slots and show a calendar.
     // Since Phase 8 is backend heavy, we'll implement a stub for candidate reschedule frontend.
-    alert("Reschedule flow would open a calendar slot picker here.");
+    toast("Reschedule flow would open a calendar slot picker here.", { icon: "ℹ️" });
   };
 
   const start = DateTime.fromISO(String(interview.starts_at)).setZone(String(interview.timezone));

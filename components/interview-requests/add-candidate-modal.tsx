@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function AddCandidateModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
@@ -18,10 +19,11 @@ export default function AddCandidateModal({ onClose }: { onClose: () => void }) 
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData)
       });
       if (res.ok) {
+        toast.success("Candidate added successfully");
         router.refresh();
         onClose();
       } else {
-        alert("Failed to add candidate");
+        toast.error("Failed to add candidate");
       }
     } finally {
       setLoading(false);
