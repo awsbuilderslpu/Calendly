@@ -7,6 +7,9 @@ import { createDatabaseAdmin } from "@/lib/db/admin";
 import { NotificationList } from "@/components/NotificationList";
 import { InterviewActions } from "@/components/interviews/interview-actions";
 import { InterviewTimeline } from "@/components/interviews/interview-timeline";
+import { getAllFeedbackForInterview } from "@/lib/db/feedback";
+import DecisionActions from "@/components/interviews/decision-actions";
+import { getCandidateStatuses } from "@/lib/integrations/google-sheets/service";
 
 export default async function InterviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const access = await getRecruiterOrAdmin();
@@ -29,6 +32,10 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
     .eq("interview_id", id)
     .order("created_at", { ascending: false });
 
+  const feedback = await getAllFeedbackForInterview(id);
+  const statuses = await getCandidateStatuses();
+  const currentDecision = interview.applicationId ? statuses.get(interview.applicationId) || "Pending" : "Pending";
+
   return (
     <>
       <AppNav />
@@ -42,6 +49,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
         </div>
         
         <InterviewActions interviewId={id} status={interview.status} />
+        <DecisionActions interviewId={id} currentDecision={currentDecision} />
 
         <div className="mt-8 grid border border-[#deded9] bg-white sm:grid-cols-2">
           {[
@@ -60,9 +68,26 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
           ))}
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {feedback && feedback.length > 0 && (
+          <section className="mt-8 border border-[#deded9] bg-white p-6">
+            <h2 className="text-2xl font-semibold mb-4">Interviewer Feedback</h2>
+            <div className="space-y-6">
+              {feedback.map((f: any) => (
+                <div key={f.id} className="border-b border-[#deded9] pb-6 last:border-0">
+                  <p className="font-semibold">{f.profiles?.name || "Unknown"} <span className="text-sm font-normal text-gray-500">({f.status})</span></p>
+                  <p className="mt-2 text-sm"><strong>Recommendation:</strong> {f.recommendation || "N/A"}</p>
+                  {f.strengths && <p className="mt-2 text-sm"><strong>Strengths:</strong> {f.strengths}</p>}
+                  {f.concerns && <p className="mt-2 text-sm"><strong>Concerns:</strong> {f.concerns}</p>}
+                  {f.comments && <p className="mt-2 text-sm"><strong>Comments:</strong> {f.comments}</p>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <section className="mt-8 border border-[#deded9] bg-white p-6">
+            <section className="border border-[#deded9] bg-white p-6">
               <p className="text-[10px] uppercase tracking-[.15em] text-[#999994]">Google Calendar</p>
               <p className="mt-3 text-lg font-semibold">{interview.calendarSyncStatus ?? "PENDING"}</p>
               {interview.googleMeetUrl && <a href={interview.googleMeetUrl} className="mt-4 inline-block text-sm text-[#f48120]">Join Google Meet →</a>}
@@ -71,7 +96,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
             <InterviewTimeline events={events || []} />
           </div>
           <div>
-            <section className="mt-8">
+            <section>
               <h2 className="text-2xl font-semibold mb-4">Notifications</h2>
               <NotificationList notifications={notifications || []} />
             </section>
