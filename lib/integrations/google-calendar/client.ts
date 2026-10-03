@@ -32,18 +32,18 @@ export function googleProviderForUser(userId: string): GoogleCalendarProvider {
     },
     async createEvent(input) {
       const { client } = await connectionForUser(userId);
-      const response = await google.calendar({ version: "v3", auth: client }).events.insert({ calendarId: input.calendarId, conferenceDataVersion: 1, sendUpdates: "none", requestBody: { summary: input.summary, description: input.description, start: { dateTime: input.start, timeZone: input.timezone }, end: { dateTime: input.end, timeZone: input.timezone }, attendees: input.attendees.map((email) => ({ email })), conferenceData: { createRequest: { requestId: input.requestId, conferenceSolutionKey: { type: "hangoutsMeet" } } } } });
+      const response = await google.calendar({ version: "v3", auth: client }).events.insert({ calendarId: input.calendarId, conferenceDataVersion: 1, sendUpdates: "all", requestBody: { summary: input.summary, description: input.description, start: { dateTime: input.start, timeZone: input.timezone }, end: { dateTime: input.end, timeZone: input.timezone }, attendees: input.attendees.map((email) => ({ email })), conferenceData: { createRequest: { requestId: input.requestId, conferenceSolutionKey: { type: "hangoutsMeet" } } } } });
       const conference = response.data.conferenceData?.entryPoints?.find((entry) => entry.entryPointType === "video");
       return { id: String(response.data.id), htmlLink: response.data.htmlLink ?? undefined, meetUrl: conference?.uri ?? undefined, conferenceId: response.data.conferenceData?.conferenceId ?? undefined };
     },
     async updateEvent(calendarId, eventId, input) {
       const { client } = await connectionForUser(userId);
-      const response = await google.calendar({ version: "v3", auth: client }).events.patch({ calendarId, eventId, sendUpdates: "none", requestBody: { start: { dateTime: input.start, timeZone: input.timezone }, end: { dateTime: input.end, timeZone: input.timezone } } });
+      const response = await google.calendar({ version: "v3", auth: client }).events.patch({ calendarId, eventId, sendUpdates: "all", requestBody: { start: { dateTime: input.start, timeZone: input.timezone }, end: { dateTime: input.end, timeZone: input.timezone } } });
       return { id: String(response.data.id), htmlLink: response.data.htmlLink ?? undefined };
     },
     async deleteEvent(calendarId, eventId) {
       const { client } = await connectionForUser(userId);
-      await google.calendar({ version: "v3", auth: client }).events.delete({ calendarId, eventId, sendUpdates: "none" });
+      await google.calendar({ version: "v3", auth: client }).events.delete({ calendarId, eventId, sendUpdates: "all" });
     },
   };
 }
