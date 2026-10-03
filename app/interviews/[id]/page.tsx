@@ -48,7 +48,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
             ["Email", interview.candidateEmail], 
             ["Job", interview.jobTitle], 
             ["Round", interview.roundName], 
-            ["Date/time", new Date(interview.startsAt).toLocaleString()], 
+            ["Date/time", new Date(interview.startsAt).toLocaleString("en-IN", { timeZone: interview.timezone || "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }) + " " + (interview.timezone || "Asia/Kolkata")], 
             ["Timezone", interview.timezone], 
             ["Duration", `${interview.durationMinutes} minutes`], 
             ["Assigned interviewers", interview.interviewers.map((person) => person.name).join(", ")]

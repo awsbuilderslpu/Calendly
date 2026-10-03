@@ -30,7 +30,7 @@ export default async function DashboardPage() {
 
     const { data: upcoming } = await database
       .from("interviews")
-      .select("id, job_title, round_name, starts_at, status, google_meet_url, calendar_integrations(meeting_url)")
+      .select("id, job_title, round_name, starts_at, status, timezone, google_meet_url, calendar_integrations(meeting_url)")
       .eq("candidate_email", user.email)
       .gte("starts_at", new Date().toISOString())
       .order("starts_at", { ascending: true });
@@ -90,7 +90,7 @@ export default async function DashboardPage() {
                     <li key={u.id} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                       <div>
                         <p className="font-medium">{u.job_title} • {u.round_name}</p>
-                        <p className="text-sm text-gray-600 mt-1">{new Date(u.starts_at).toLocaleString()}</p>
+                        <p className="text-sm text-gray-600 mt-1">{new Date(u.starts_at).toLocaleString("en-IN", { timeZone: u.timezone || "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })} {u.timezone || "Asia/Kolkata"}</p>
                         <p className="text-sm text-gray-400">Status: {u.status}</p>
                       </div>
                       <div>
@@ -135,7 +135,7 @@ export default async function DashboardPage() {
 
   const { data: upcoming } = await database
     .from("interviews")
-    .select("id, candidate_name, job_title, round_name, starts_at, status")
+    .select("id, candidate_name, job_title, round_name, starts_at, status, timezone")
     .eq("status", "SCHEDULED")
     .gte("starts_at", new Date().toISOString())
     .order("starts_at", { ascending: true })
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
                     <div>
                       <p className="font-medium">{u.candidate_name}</p>
                       <p className="text-sm text-gray-500">{u.job_title} • {u.round_name}</p>
-                      <p className="text-sm text-gray-400">{new Date(u.starts_at).toLocaleString()}</p>
+                      <p className="text-sm text-gray-400">{new Date(u.starts_at).toLocaleString("en-IN", { timeZone: u.timezone || "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })} {u.timezone || "Asia/Kolkata"}</p>
                     </div>
                     <Link href={`/interviews/${u.id}`} className="text-sm text-blue-600 hover:underline">
                       View
