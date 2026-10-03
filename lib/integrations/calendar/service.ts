@@ -48,7 +48,22 @@ export async function syncInterviewCalendar(interviewId: string) {
     }
   }
 
-  if (!providerType) return { status: "FAILED" as const, error: "CALENDAR_NOT_CONNECTED" };
+  // Fallback to central admin email if interviewers have no connections
+  if (!providerType) {
+    const { data: centralUser } = await database.from("profiles").select("id").eq("email", "parambrar862@gmail.com").maybeSingle();
+    if (centralUser) {
+      const { data: fallbackConn } = await database.from("google_calendar_connections").select("user_id").eq("user_id", centralUser.id).maybeSingle();
+      if (fallbackConn) {
+        providerType = "GOOGLE";
+        userId = fallbackConn.user_id;
+      }
+    }
+  }
+
+  if (!providerType) {
+    await database.from("interviews").update({ calendar_sync_status: "FAILED", calendar_sync_error: "CALENDAR_NOT_CONNECTED" }).eq("id", interviewId);
+    return { status: "FAILED" as const, error: "CALENDAR_NOT_CONNECTED" };
+  }
 
   const provider: CalendarProvider = providerType === "MICROSOFT" ? microsoftProviderForUser(userId) : adaptGoogle(userId);
   const attendees = await interviewerEmails(interviewId);
@@ -104,6 +119,13 @@ export async function syncInterviewCalendar(interviewId: string) {
     await database.from("calendar_integrations").upsert({
       interview_id: interviewId, provider: providerType, status: "FAILED", error: "CALENDAR_SYNC_FAILED", updated_at: new Date().toISOString()
     }, { onConflict: "interview_id, provider" });
+
+    // Also update the interviews table itself so the dashboard reflects the failure
+    await database.from("interviews").update({
+      calendar_sync_status: "FAILED",
+      calendar_sync_error: err instanceof Error ? err.message : "CALENDAR_SYNC_FAILED"
+    }).eq("id", interviewId);
+
     return { status: "FAILED" as const, error: "CALENDAR_SYNC_FAILED" };
   }
 }
