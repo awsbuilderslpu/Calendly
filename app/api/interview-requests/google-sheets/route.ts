@@ -1,8 +1,22 @@
 import { NextResponse } from "next/server";
 import { getRecruiterOrAdmin } from "@/lib/auth/server";
+import { google } from "googleapis";
 import { createDatabaseAdmin } from "@/lib/db/admin";
 import crypto from "node:crypto";
-import { getSheetsClient } from "@/lib/integrations/google-sheets/service";
+
+async function getSheetsClient() {
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !privateKey) {
+    throw new Error("Google service account credentials not configured in environment variables.");
+  }
+  const auth = new google.auth.JWT(
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    undefined,
+    privateKey,
+    ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+  );
+  return { sheets: google.sheets({ version: "v4", auth }), spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID };
+}
 
 export async function POST(request: Request) {
   const access = await getRecruiterOrAdmin();

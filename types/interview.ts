@@ -1,7 +1,6 @@
 export type Interview = {
   id: string;
   schedulingRequestId: string;
-  applicationId?: string;
   schedulingLinkId: string;
   candidateId: string;
   candidateName: string;
@@ -32,7 +31,6 @@ export function mapInterview(row: Record<string, unknown>, interviewers: Intervi
   return {
     id: String(row.id),
     schedulingRequestId: String(row.scheduling_request_id),
-    applicationId: row.interview_scheduling_requests ? String((row.interview_scheduling_requests as any).application_id) : undefined,
     schedulingLinkId: String(row.scheduling_link_id),
     candidateId: String(row.candidate_id),
     candidateName: String(row.candidate_name),

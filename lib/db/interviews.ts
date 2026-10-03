@@ -13,13 +13,13 @@ async function withMembers(row: Record<string, unknown>): Promise<Interview> {
 }
 
 export async function listInterviews() {
-  const { data, error } = await createDatabaseAdmin().from("interviews").select("*, interview_scheduling_requests(application_id)").order("starts_at", { ascending: true });
+  const { data, error } = await createDatabaseAdmin().from("interviews").select("*").order("starts_at", { ascending: true });
   if (error) throw new Error("Unable to load interviews");
   return Promise.all((data ?? []).map(withMembers));
 }
 
 export async function getInterview(id: string) {
-  const { data, error } = await createDatabaseAdmin().from("interviews").select("*, interview_scheduling_requests(application_id)").eq("id", id).maybeSingle();
+  const { data, error } = await createDatabaseAdmin().from("interviews").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error("Unable to load interview");
   return data ? withMembers(data) : null;
 }
