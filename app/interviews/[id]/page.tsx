@@ -23,6 +23,12 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
     .eq("interview_id", id)
     .order("created_at", { ascending: false });
 
+  const { data: feedback } = await database
+    .from("interview_feedback")
+    .select("*")
+    .eq("interview_id", id)
+    .maybeSingle();
+
   const { data: events } = await database
     .from("interview_events")
     .select("*")
@@ -68,6 +74,24 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
               {interview.googleMeetUrl && <a href={interview.googleMeetUrl} className="mt-4 inline-block text-sm text-[#f48120]">Join Google Meet →</a>}
               {interview.calendarSyncStatus !== "SYNCED" && <CalendarSyncButton id={interview.id} />}
             </section>
+            {feedback?.recommendation && (
+              <section className="mt-8 border border-[#deded9] bg-white p-6">
+                <p className="text-[10px] uppercase tracking-[.15em] text-[#999994]">Feedback Decision</p>
+                <div className="mt-3 flex items-center gap-2">
+                  {feedback.recommendation === "YES" ? (
+                    <span className="flex items-center gap-2 text-green-600 font-semibold">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                      Selected
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2 text-red-600 font-semibold">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      Not Selected
+                    </span>
+                  )}
+                </div>
+              </section>
+            )}
             <InterviewTimeline events={events || []} />
           </div>
           <div>

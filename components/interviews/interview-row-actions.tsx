@@ -4,7 +4,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-export default function InterviewRowActions({ interviewId, initialStatus }: { interviewId: string, initialStatus: string }) {
+export default function InterviewRowActions({ interviewId, initialStatus, feedbackRecommendation }: { interviewId: string, initialStatus: string, feedbackRecommendation?: string | null }) {
   const [status, setStatus] = useState(initialStatus);
   const [loading, setLoading] = useState(false);
   const [showFeedbackBox, setShowFeedbackBox] = useState(false);
@@ -71,13 +71,24 @@ export default function InterviewRowActions({ interviewId, initialStatus }: { in
         </button>
       )}
 
-      <button 
+      {feedbackRecommendation ? (
+        <span className={`text-xs font-semibold flex items-center gap-1 ${feedbackRecommendation === "YES" ? "text-green-600" : "text-red-600"}`}>
+          {feedbackRecommendation === "YES" ? (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          )}
+          {feedbackRecommendation === "YES" ? "Selected" : "Not Selected"}
+        </span>
+      ) : (
+        <button 
         onClick={() => setShowFeedbackBox(!showFeedbackBox)}
         className="text-left text-orange-600 hover:underline text-xs flex items-center gap-1 cursor-pointer w-max"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
         Add Feedback
       </button>
+      )}
 
       {showFeedbackBox && (
         <div className="absolute top-full right-0 z-50 w-48 bg-white border border-[#deded9] shadow-2xl p-3 mt-2">
