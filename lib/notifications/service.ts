@@ -97,6 +97,15 @@ export async function createBookingNotifications(params: CreateBookingNotificati
     if (rem.time > now) {
       notificationsToCreate.push({
         interview_id: interviewId,
+        recipient_email: "parambrar862@gmail.com",
+        type: rem.type,
+        status: 'PENDING',
+        scheduled_for: rem.time.toISO(),
+        schedule_version: interview.schedule_version,
+      });
+
+      notificationsToCreate.push({
+        interview_id: interviewId,
         recipient_email: interview.candidate_email,
         type: rem.type,
         status: 'PENDING',
